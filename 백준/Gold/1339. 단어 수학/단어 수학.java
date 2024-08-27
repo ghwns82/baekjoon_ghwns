@@ -31,9 +31,8 @@ public class Main {
 		Arrays.sort(arr);
 		int result = 0;
 		int number = 9;
-		for (int i = 25; i >=0; i--) {
-			result += arr[i]*number;
-			number--;
+		for(int i=0; i<10; i++) {
+			result+=arr[25-i]*(9-i);
 		}
 		System.out.println(result);
 
