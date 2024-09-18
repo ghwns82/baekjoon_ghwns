@@ -1,20 +1,27 @@
+import java.io.*;
 import java.util.*;
 
 public class Main {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        int n = sc.nextInt();  // 플러그 개수
-        int k = sc.nextInt();  // 기기 수
-        int[] arr = new int[k];  // 기기 배열
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        
+        // 입력받기
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken());  // 플러그 개수
+        int k = Integer.parseInt(st.nextToken());  // 기기 수
+
+        // 기기 배열 입력
+        int[] arr = new int[k];
+        st = new StringTokenizer(br.readLine());
         for (int i = 0; i < k; i++) {
-            arr[i] = sc.nextInt();
+            arr[i] = Integer.parseInt(st.nextToken());
         }
 
         // defaultdict 역할을 하는 HashMap
         HashMap<Integer, Deque<Integer>> freq = new HashMap<>();
         // 현재 사용 중인 기기를 저장하는 HashSet
         HashSet<Integer> using = new HashSet<>();
-        
+
         // 각 기기의 인덱스를 저장하는 deque 초기화
         for (int i = 0; i < k; i++) {
             freq.putIfAbsent(arr[i], new ArrayDeque<>());
@@ -51,6 +58,5 @@ public class Main {
         }
 
         System.out.println(cnt);  // 플러그 뽑은 횟수 출력
-        sc.close();
     }
 }
