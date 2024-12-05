@@ -1,22 +1,27 @@
+import java.io.*;
 import java.util.*;
 
 public class Main {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
 
-        // 입력 받기
-        int n = sc.nextInt();
-        int t = sc.nextInt();
+        // 첫 줄 입력 처리
+        int n = Integer.parseInt(st.nextToken());
+        int t = Integer.parseInt(st.nextToken());
+
+        // 점들 입력 받기
         Set<Point> arr = new HashSet<>();
         for (int i = 0; i < n; i++) {
-            int x = sc.nextInt();
-            int y = sc.nextInt();
+            st = new StringTokenizer(br.readLine());
+            int x = Integer.parseInt(st.nextToken());
+            int y = Integer.parseInt(st.nextToken());
             arr.add(new Point(x, y));
         }
 
         // BFS 초기화
         Queue<State> queue = new LinkedList<>();
-        queue.add(new State(0, 0, 0)); // (0, 0)에서 시작, 이동 횟수 0
+        queue.add(new State(0, 0, 0)); // 시작점 (0, 0), 이동 횟수 0
 
         while (!queue.isEmpty()) {
             State current = queue.poll();
@@ -42,7 +47,7 @@ public class Main {
             arr.removeAll(tmp); // 방문한 점 제거
         }
 
-        System.out.println(-1); // 정상에 도달 불가
+        System.out.println(-1); // 정상에 도달할 수 없음
     }
 
     // BFS 상태 클래스
