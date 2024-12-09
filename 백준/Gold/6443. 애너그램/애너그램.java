@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    private static HashMap<Character, Integer> charCountMap;
+    private static TreeMap<Character, Integer> charCountMap;
     private static char[] currentWord;
     private static BufferedWriter bw;
 
@@ -10,13 +10,14 @@ public class Main {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-        // 입력 횟수 N 읽기
-        int n = Integer.parseInt(br.readLine().trim());
+        // 입력 횟수 N을 StringTokenizer로 읽기
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken());
 
         for (int i = 0; i < n; i++) {
             // 각 단어 입력받기
             String word = br.readLine().trim();
-            charCountMap = new HashMap<>();
+            charCountMap = new TreeMap<>();
 
             // 문자 개수 세기
             for (char c : word.toCharArray()) {
@@ -39,12 +40,9 @@ public class Main {
             return;
         }
 
-        // HashMap 키를 정렬한 리스트 생성
-        List<Character> sortedKeys = new ArrayList<>(charCountMap.keySet());
-        Collections.sort(sortedKeys);
-
-        for (char letter : sortedKeys) {
-            int count = charCountMap.get(letter);
+        for (Map.Entry<Character, Integer> entry : charCountMap.entrySet()) {
+            char letter = entry.getKey();
+            int count = entry.getValue();
 
             if (count > 0) {
                 charCountMap.put(letter, count - 1);
