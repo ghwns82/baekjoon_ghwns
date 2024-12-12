@@ -58,7 +58,7 @@ public class Main {
     // 다익스트라 알고리즘
     static int dijkstra() {
         PriorityQueue<State> pq = new PriorityQueue<>();
-        Map<String, Integer> visited = new HashMap<>();
+        Map<StateKey, Integer> visited = new HashMap<>();
 
         pq.add(new State(0, startIdx, h, 0));
 
@@ -76,7 +76,7 @@ public class Main {
             }
 
             // 이미 방문한 상태인지 확인
-            String stateKey = currentNode + "," + health + "," + durability;
+            StateKey stateKey = new StateKey(currentNode, health, durability);
             if (visited.containsKey(stateKey) && visited.get(stateKey) <= moves) {
                 continue;
             }
@@ -114,7 +114,7 @@ public class Main {
                     }
                 }
 
-                // 체력이 0 이하라면 이동 불가
+                // 체력이 0 미만이면 이동 불가
                 if (newHealth < 0) {
                     continue;
                 }
@@ -150,6 +150,32 @@ public class Main {
         @Override
         public int compareTo(State o) {
             return this.moves - o.moves;
+        }
+    }
+
+    // 상태 키 클래스
+    static class StateKey {
+        int currentNode;
+        int health;
+        int durability;
+
+        public StateKey(int currentNode, int health, int durability) {
+            this.currentNode = currentNode;
+            this.health = health;
+            this.durability = durability;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(currentNode, health, durability);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null || getClass() != obj.getClass()) return false;
+            StateKey other = (StateKey) obj;
+            return currentNode == other.currentNode && health == other.health && durability == other.durability;
         }
     }
 }
