@@ -1,92 +1,91 @@
-import java.io.*;
-import java.util.*;
-
-class Node {
-    int data; // 구간 합
-    int start, end; // 구간 범위
-    Node left, right; // 좌, 우 자식 노드
-
-    public Node(int start, int end) {
-        this.start = start;
-        this.end = end;
-        this.data = 0;
-    }
-}
-
-class SegmentTree {
-    Node root;
-
-    // Segment Tree 생성
-    public Node create(int[] arr, int start, int end) {
-        Node node = new Node(start, end);
-        if (start == end) {
-            node.data = arr[start];
-        } else {
-            int mid = (start + end) / 2;
-            node.left = create(arr, start, mid);
-            node.right = create(arr, mid + 1, end);
-            node.data = node.left.data + node.right.data;
-        }
-        return node;
-    }
-
-    // Segment Tree 수정
-    public void modify(Node node, int index, int value) {
-        node.data += value;
-        if (node.start == node.end) {
-            return;
-        }
-        int mid = (node.start + node.end) / 2;
-        if (index <= mid) {
-            modify(node.left, index, value);
-        } else {
-            modify(node.right, index, value);
-        }
-    }
-
-    // 특정 군번이 속한 부대 찾기
-    public int search(Node node, int index) {
-        if (node.start == node.end) {
-            return node.start;
-        }
-        if (index > node.left.data) {
-            return search(node.right, index - node.left.data);
-        } else {
-            return search(node.left, index);
-        }
-    }
-}
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st;
+    private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    private static StringTokenizer tokens;
+    private static StringBuilder sb = new StringBuilder();
 
-        int n = Integer.parseInt(br.readLine()); // 부대의 개수
-        int[] army = new int[n];
-        st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < n; i++) {
-            army[i] = Integer.parseInt(st.nextToken());
+    private static int N; // 부대 개수
+    private static int M; // 명령 개수
+
+    private static int[] units; // 부대별 인원 수
+    private static int[] tree; // 세그먼트 트리 배열
+
+    // 세그먼트 트리 초기화
+    private static int init(int start, int end, int index) {
+        if (start == end) { // 리프 노드
+            tree[index] = units[start];
+            return tree[index];
         }
 
-        int q = Integer.parseInt(br.readLine()); // 명령의 개수
-        SegmentTree tree = new SegmentTree();
-        tree.root = tree.create(army, 0, n - 1);
+        int mid = (start + end) / 2;
+        tree[index] = init(start, mid, index * 2) + init(mid + 1, end, index * 2 + 1);
+        return tree[index];
+    }
 
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-        for (int i = 0; i < q; i++) {
-            st = new StringTokenizer(br.readLine());
-            int command = Integer.parseInt(st.nextToken());
-            if (command == 1) {
-                int unit = Integer.parseInt(st.nextToken()) - 1; // 부대 번호 (0-indexed)
-                int value = Integer.parseInt(st.nextToken()); // 증원/감원 수
-                tree.modify(tree.root, unit, value);
+    // 세그먼트 트리 업데이트
+    private static void update(int start, int end, int index, int target, int value) {
+        if (target < start || target > end) { // 범위 밖
+            return;
+        }
+
+        tree[index] += value; // 값 갱신
+        if (start == end) { // 리프 노드 도달
+            return;
+        }
+
+        int mid = (start + end) / 2;
+        update(start, mid, index * 2, target, value);
+        update(mid + 1, end, index * 2 + 1, target, value);
+    }
+
+    // 군번에 해당하는 부대 찾기
+    private static int findUnit(int start, int end, int index, int target) {
+        if (start == end) { // 리프 노드에 도달
+            return start + 1; // 1-based index
+        }
+
+        int mid = (start + end) / 2;
+        if (tree[index * 2] >= target) { // 왼쪽 자식 탐색
+            return findUnit(start, mid, index * 2, target);
+        } else { // 오른쪽 자식 탐색
+            return findUnit(mid + 1, end, index * 2 + 1, target - tree[index * 2]);
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        N = Integer.parseInt(br.readLine()); // 부대 개수
+
+        units = new int[N];
+        tree = new int[N * 4];
+        tokens = new StringTokenizer(br.readLine());
+
+        for (int i = 0; i < N; i++) {
+            units[i] = Integer.parseInt(tokens.nextToken());
+        }
+
+        init(0, N - 1, 1); // 세그먼트 트리 초기화
+
+        M = Integer.parseInt(br.readLine()); // 명령 개수
+        for (int i = 0; i < M; i++) {
+            tokens = new StringTokenizer(br.readLine());
+            int cmd = Integer.parseInt(tokens.nextToken());
+
+            if (cmd == 1) {
+                // 부대 인원 변경
+                int a = Integer.parseInt(tokens.nextToken()) - 1;
+                int b = Integer.parseInt(tokens.nextToken());
+                update(0, N - 1, 1, a, b);
             } else {
-                int soldierNumber = Integer.parseInt(st.nextToken()); // 군번
-                bw.write((tree.search(tree.root, soldierNumber) + 1) + "\n"); // 1-indexed 출력
+                // 군번에 해당하는 부대 찾기
+                int a = Integer.parseInt(tokens.nextToken());
+                sb.append(findUnit(0, N - 1, 1, a)).append("\n");
             }
         }
-        bw.flush();
-        bw.close();
+
+        System.out.println(sb);
     }
 }
