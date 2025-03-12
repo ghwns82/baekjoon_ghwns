@@ -132,7 +132,10 @@ for _ in range(m):
     else:
         v0 = segtree.src0(segtree.root, order[content[0]])
         s,e=tree_range[content[0]]
-        v1 = segtree.src1(segtree.root, s,e-1)
+        if s>e-1:
+            v1=0
+        else:
+            v1 = segtree.src1(segtree.root, s,e-1)
         print(v0+v1)
             
         
