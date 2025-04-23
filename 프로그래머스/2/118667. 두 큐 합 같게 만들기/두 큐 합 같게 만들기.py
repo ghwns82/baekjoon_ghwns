@@ -20,12 +20,13 @@ def solution(queue1, queue2):
         hap-=queue2[i]
         ns1[hap] = len(queue1) + i
     
+        
     
     if (hap1+hap2)%2:
         # print('case1')
         return -1
     
-    result = len(queue1)*2 + len(queue2)*2+1
+    result = len(queue1) + len(queue2)+1
     cnt=0
     for key in ns1:
         key2 = (hap2-hap1)//2 + key
@@ -48,7 +49,20 @@ def solution(queue1, queue2):
             break
 
     # print('result',result)
-    if result ==len(queue1)*2 + len(queue2)*2+1:
+    if result == len(queue1) + len(queue2)+1:
         return -1
     
     return result
+
+
+# 3 5 12 14
+
+# 4 10 15 16
+
+# a / b  A
+# c / d  B
+
+# a+d == b+c
+# a+B-c == A-a+c
+# (B-A) + 2a == 2c
+# (B-A)//2 +a == c
