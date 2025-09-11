@@ -1,6 +1,6 @@
 # [level 3] 미로 탈출 명령어 - 150365 
 
-[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/150365?language=python3) 
+[문제 링크](https://school.programmers.co.kr/learn/courses/30/lessons/150365?language=java) 
 
 ### 성능 요약
 
@@ -16,7 +16,7 @@
 
 ### 제출 일자
 
-2025년 09월 11일 20:33:46
+2025년 09월 11일 20:33:52
 
 ### 문제 설명
 
