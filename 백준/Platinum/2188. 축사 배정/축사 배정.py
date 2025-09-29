@@ -1,37 +1,22 @@
 import sys
-input = lambda : sys.stdin.readline().rstrip()
+input = sys.stdin.readline
+n,m = map(int,input().split())
+want=[list(map(int,input().split()))[1:] for i in range(n)]
 
-n, m = map(int,input().split())
+def bimatch(node):
+    if visited[node]:
+        return False
+    visited[node] = True
 
-# 선택된 정점 번호
-selected = [-1] * (m+1)
+    for next in want[node]:
 
-graph = [list(map(int,input().split()))[1:] for i in range(n)]
+        if selected[next] == -1 or bimatch(selected[next]):
+            selected[next] = node
+            return True
+    return False
 
-def bimatch(N):
-    # print('visited',visited)                                           
-    if visited[N]:
-        # print(f'visited[{N}]')                                        
-        return False                                      
-    visited[N] = True                                     
-                                                          
-    for num in graph[N]:                                   
-        if selected[num] == -1 or bimatch(selected[num]):         
-            selected[num] = N
-            # print(f'for {num} in graph[{N}]')                                
-            return True                                   
-    # print(f'for graph[{N}] else')                                                          
-    return False  
-
-for i in range(n):            
-    visited = [False] * (n)      
+selected = [-1]*(m+1)
+for i in range(n):
+    visited = [0]*(n+1)
     bimatch(i)
-    # print('final visited',visited)                                           
-    # print('selected',selected)
-    
-result = 0               
-for i in range(1,m+1):  
-    if selected[i] >= 0:         
-        result += 1 
-        
-print(result)
+print(sum(i>=0 for i in selected))
