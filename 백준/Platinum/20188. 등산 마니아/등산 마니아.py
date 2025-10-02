@@ -1,5 +1,6 @@
 import math
 import sys
+sys.setrecursionlimit(3 * 10**6)
 input = sys.stdin.readline
 n = int(input())
 
