@@ -2,110 +2,131 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    static int R, C;
-    static char[][] map;
-    static Map<Integer, Map<Integer, Integer>> graph = new HashMap<>();
-    static Set<Integer> visited;
-    static Map<Integer, Integer> selected;
 
+    // 전역 변수
+    static int ROW, COL;                  // 지도 크기
+    static char[][] MAP;                  // 입력 지도
+    static Map<Integer, Map<Integer, Integer>> distanceGraph = new HashMap<>(); // C 위치별로 P까지 거리 저장
+    static Set<Integer> visited;          // DFS 방문 체크
+    static Map<Integer, Integer> match;   // 매칭 결과 저장 (P → C)
+    
+    // 상하좌우 이동 방향
     static int[] dx = {-1, 1, 0, 0};
     static int[] dy = {0, 0, 1, -1};
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
-        R = Integer.parseInt(st.nextToken());
-        C = Integer.parseInt(st.nextToken());
 
-        map = new char[R][C];
-        for (int i = 0; i < R; i++) {
-            map[i] = br.readLine().toCharArray();
+        ROW = Integer.parseInt(st.nextToken());
+        COL = Integer.parseInt(st.nextToken());
+        MAP = new char[ROW][COL];
+
+        for (int i = 0; i < ROW; i++) {
+            MAP[i] = br.readLine().toCharArray();
         }
 
-        // BFS로 각 C의 거리 그래프 생성
-        for (int i = 0; i < R; i++) {
-            for (int j = 0; j < C; j++) {
-                if (map[i][j] == 'C') {
-                    graph.put(i * C + j, bfs(i, j));
+        // Step 1️⃣ : 각 'C'에서 BFS 실행 → 각 'P'까지의 거리 저장
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COL; j++) {
+                if (MAP[i][j] == 'C') {
+                    distanceGraph.put(i * COL + j, bfsFromCleaner(i, j));
                 }
             }
         }
 
-        if (graph.isEmpty()) {
+        // 'C'가 없는 경우
+        if (distanceGraph.isEmpty()) {
             System.out.println(0);
             return;
         }
 
-        int left = 1, right = R * C, result = -1;
+        // Step 2️⃣ : 이진 탐색으로 최소 거리 찾기
+        int left = 1, right = ROW * COL;
+        int answer = -1;
+
         while (left < right) {
             int mid = (left + right) / 2;
-            visited = new HashSet<>();
-            selected = new HashMap<>();
 
-            if (possible(mid)) {
-                result = mid;
+            match = new HashMap<>();
+            if (canAllCleanersBeMatched(mid)) {
+                // 모든 'C'가 거리 mid 이하로 매칭 가능 → 더 작은 거리 탐색
+                answer = mid;
                 right = mid;
             } else {
+                // 불가능 → 거리 늘려야 함
                 left = mid + 1;
             }
         }
 
-        System.out.println(result);
+        System.out.println(answer);
     }
 
-    static Map<Integer, Integer> bfs(int x, int y) {
-        Map<Integer, Integer> result = new HashMap<>();
-        int[][] dist = new int[R][C];
-        for (int[] d : dist) Arrays.fill(d, -1);
+    /**
+     * BFS : 특정 'C'(청소기)에서 출발하여 모든 'P'(더러운 곳)까지 최소 거리 계산
+     */
+    static Map<Integer, Integer> bfsFromCleaner(int startX, int startY) {
+        Map<Integer, Integer> foundP = new HashMap<>();
+        int[][] dist = new int[ROW][COL];
+        for (int[] row : dist) Arrays.fill(row, -1);
 
         Queue<int[]> q = new LinkedList<>();
-        q.add(new int[]{x, y, 0});
-        dist[x][y] = 0;
+        q.add(new int[]{startX, startY, 0});
+        dist[startX][startY] = 0;
 
         while (!q.isEmpty()) {
             int[] cur = q.poll();
-            int cx = cur[0], cy = cur[1], cd = cur[2];
+            int x = cur[0], y = cur[1], d = cur[2];
 
             for (int dir = 0; dir < 4; dir++) {
-                int nx = cx + dx[dir];
-                int ny = cy + dy[dir];
-                if (nx < 0 || nx >= R || ny < 0 || ny >= C) continue;
+                int nx = x + dx[dir];
+                int ny = y + dy[dir];
+                if (nx < 0 || nx >= ROW || ny < 0 || ny >= COL) continue;
                 if (dist[nx][ny] != -1) continue;
-                if (map[nx][ny] == 'X') continue;
+                if (MAP[nx][ny] == 'X') continue; // 벽
 
-                dist[nx][ny] = cd + 1;
-                q.add(new int[]{nx, ny, cd + 1});
+                dist[nx][ny] = d + 1;
+                q.add(new int[]{nx, ny, d + 1});
 
-                if (map[nx][ny] == 'P') {
-                    result.put(nx * C + ny, cd + 1);
+                // 'P' 발견 시 결과에 기록
+                if (MAP[nx][ny] == 'P') {
+                    foundP.put(nx * COL + ny, d + 1);
                 }
             }
         }
-        return result;
+
+        return foundP;
     }
 
-    static boolean possible(int limit) {
-        for (int key : graph.keySet()) {
+    /**
+     * 현재 거리 제한(limit)으로 모든 'C'가 'P'에 매칭 가능한지 검사
+     */
+    static boolean canAllCleanersBeMatched(int limit) {
+        for (int cleaner : distanceGraph.keySet()) {
             visited = new HashSet<>();
-            if (!bimatch(key, limit)) {
-                return false;
+            if (!tryMatch(cleaner, limit)) {
+                return false; // 한 명이라도 매칭 실패 시 전체 불가능
             }
         }
         return true;
     }
 
-    static boolean bimatch(int cur, int limit) {
-        if (visited.contains(cur)) return false;
-        visited.add(cur);
+    /**
+     * DFS 기반 이분매칭 (현재 cleaner를 매칭 시도)
+     */
+    static boolean tryMatch(int cleaner, int limit) {
+        if (visited.contains(cleaner)) return false;
+        visited.add(cleaner);
 
-        for (Map.Entry<Integer, Integer> entry : graph.get(cur).entrySet()) {
-            int next = entry.getKey();
-            int dist = entry.getValue();
+        for (Map.Entry<Integer, Integer> entry : distanceGraph.get(cleaner).entrySet()) {
+            int dirtySpot = entry.getKey();  // P 위치
+            int dist = entry.getValue();     // C → P 거리
 
-            if (dist > limit) continue;
+            if (dist > limit) continue; // 제한 거리 초과 시 불가
 
-            if (!selected.containsKey(next) || bimatch(selected.get(next), limit)) {
-                selected.put(next, cur);
+            // 이미 매칭된 P가 없거나, 기존 C를 다른 곳으로 옮길 수 있는 경우
+            if (!match.containsKey(dirtySpot) || tryMatch(match.get(dirtySpot), limit)) {
+                match.put(dirtySpot, cleaner);
                 return true;
             }
         }
