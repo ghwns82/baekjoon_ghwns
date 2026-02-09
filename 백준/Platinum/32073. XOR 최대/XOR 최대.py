@@ -20,12 +20,7 @@ for _ in range(t):
     while index < n and s[index] == '1':
         index += 1
 
-    need = []
-    for i in range(index, n):
-        if s[i] == '0':
-            need.append(1)
-        else:
-            need.append(0)
+    need = [1 if s[i] == '0' else 0 for i in range(index, n)]
 
     if not need:
         write(s[start:n - 1])
@@ -39,25 +34,17 @@ for _ in range(t):
     for i in range(start, start + len(need)):
         dq.append(int(s[i]))
 
-    result = [need[i] ^ dq[i] for i in range(len(need))]
+    result = ''.join('10'[need[i] ^ dq[i]] for i in range(len(need)))
 
-    index = start + len(need)
-    while index < n:
+    idx = start + len(need)
+    while idx < n:
         dq.popleft()
-        dq.append(int(s[index]))
-        tmp = []
-        flag = True
-        for i in range(len(need)):
-            tmp_val = need[i] ^ dq[i]
-            tmp.append(tmp_val)
-            if tmp_val < result[i]:
-                flag = False
-            if flag and tmp_val > result[i]:
-                break
-        else:
-            result = tmp
-        index += 1
+        dq.append(int(s[idx]))
+        now = ''.join('10'[need[i] ^ dq[i]] for i in range(len(need)))
+        if now > result:
+            result = now
+        idx += 1
 
     write(s[start:n - len(result)])
-    write(''.join('10'[i] for i in result))
+    write(result)
     write('\n')
